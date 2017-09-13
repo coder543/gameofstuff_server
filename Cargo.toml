@@ -1,0 +1,15 @@
+[package]
+authors = ["Josh Leverette <coder543@gmail.com>"]
+name = "gameofstuff_server"
+version = "0.1.0"
+
+[dependencies]
+postgres = "0.15.1"
+r2d2 = "0.7.4"
+r2d2_postgres = "0.13.0"
+rocket = "0.3.2"
+rocket_codegen = "0.3.2"
+rocket_contrib = "0.3.2"
+serde = "1.0.11"
+serde_codegen = "0.9.0"
+serde_derive = "1.0.11"

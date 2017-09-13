@@ -1,0 +1,1 @@
+drop table answer, game, gameround, guess, player, topic cascade;
