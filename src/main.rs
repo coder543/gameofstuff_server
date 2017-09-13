@@ -20,7 +20,7 @@ use rocket::http::Status;
 use rocket::request::{self, FromRequest};
 use rocket::{Request, State, Outcome};
 
-// An alias to the type for a pool of Diesel SQLite connections.
+// An alias to the type for a pool of postgresql connections.
 type Pool = r2d2::Pool<PostgresConnectionManager>;
 
 // Connection request guard type: a wrapper around an r2d2 pooled connection.
@@ -41,7 +41,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for DbConn {
     }
 }
 
-// For the convenience of using an &DbConn as an &SqliteConnection.
+// For the convenience of using &DbConn as &Connection.
 impl Deref for DbConn {
     type Target = Connection;
 
