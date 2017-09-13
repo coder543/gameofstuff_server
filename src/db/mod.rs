@@ -1,12 +1,17 @@
+use std::ops::Deref;
 
 use r2d2;
-use postgres::Connection;
 use r2d2_postgres::{TlsMode, PostgresConnectionManager};
 
-use std::ops::Deref;
+use postgres::Connection;
+
 use rocket::http::Status;
 use rocket::request::{self, FromRequest};
 use rocket::{Request, State, Outcome};
+
+pub mod game;
+pub mod player;
+pub mod topic;
 
 // An alias to the type for a pool of postgresql connections.
 type Pool = r2d2::Pool<PostgresConnectionManager>;
