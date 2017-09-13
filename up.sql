@@ -1,5 +1,5 @@
 CREATE TABLE topic (
-    id serial PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     created timestamptz NOT NULL DEFAULT now(),
     updated timestamptz NOT NULL DEFAULT now(),
 
@@ -14,7 +14,7 @@ INSERT INTO topic (categories, topic) VALUES
 ;
 
 CREATE TABLE game (
-    id serial PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     created timestamptz NOT NULL DEFAULT now(),
     updated timestamptz NOT NULL DEFAULT now(),
 
@@ -23,11 +23,11 @@ CREATE TABLE game (
 );
 
 CREATE TABLE player (
-    id serial PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     created timestamptz NOT NULL DEFAULT now(),
     updated timestamptz NOT NULL DEFAULT now(),
 
-    game int REFERENCES game(id) ON DELETE CASCADE,
+    game bigint REFERENCES game(id) ON DELETE CASCADE,
 
     name      text NOT NULL,
     score     int  NOT NULL DEFAULT 0,
@@ -35,36 +35,36 @@ CREATE TABLE player (
 );
 
 CREATE TABLE gameround (
-    id serial PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     created timestamptz NOT NULL DEFAULT now(),
     updated timestamptz NOT NULL DEFAULT now(),
 
-    game    int REFERENCES game(id)     ON DELETE CASCADE,
-    topic   int REFERENCES topic(id)    ON DELETE CASCADE,
+    game    bigint REFERENCES game(id)     ON DELETE CASCADE,
+    topic   bigint REFERENCES topic(id)    ON DELETE CASCADE,
 
     num     int NOT NULL
 );
 
 CREATE TABLE answer (
-    id serial PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     created timestamptz NOT NULL DEFAULT now(),
     updated timestamptz NOT NULL DEFAULT now(),
 
-    gameround   int REFERENCES gameround(id)    ON DELETE CASCADE,
-    player      int REFERENCES player(id)       ON DELETE CASCADE,
+    gameround   bigint REFERENCES gameround(id)    ON DELETE CASCADE,
+    player      bigint REFERENCES player(id)       ON DELETE CASCADE,
     
     answer text NOT NULL
 );
 
 CREATE TABLE guess (
-    id serial PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     created timestamptz NOT NULL DEFAULT now(),
     updated timestamptz NOT NULL DEFAULT now(),
 
-    answer          int REFERENCES answer(id)   ON DELETE CASCADE,
+    answer          bigint REFERENCES answer(id)   ON DELETE CASCADE,
 
-    guessed_player  int REFERENCES player(id)   ON DELETE CASCADE,
-    guesser         int REFERENCES player(id)   ON DELETE CASCADE
+    guessed_player  bigint REFERENCES player(id)   ON DELETE CASCADE,
+    guesser         bigint REFERENCES player(id)   ON DELETE CASCADE
 );
 
 -- INSERT INTO game (name) VALUES ('test');
