@@ -9,7 +9,7 @@ pub struct Topic {
 }
 
 fn get_used_topic_ids(conn: &DbConn, game_id: i64) -> Vec<i64> {
-    conn.query("select topic from gameround where game=$1", &[&game_id])
+    conn.query("select topic_id from gameround where game=$1", &[&game_id])
         .unwrap()
         .iter()
         .map(|topic| topic.get(0))
@@ -46,6 +46,7 @@ pub fn get_topic(
     game_id: i64,
     category: String,
 ) -> Result<Json<Topic>, &'static str> {
+
     let topics = get_topics(&conn, category);
     let used_topics = get_used_topic_ids(&conn, game_id);
 
