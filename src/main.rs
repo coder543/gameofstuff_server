@@ -36,7 +36,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for DbConn {
         let pool = request.guard::<State<Pool>>()?;
         match pool.get() {
             Ok(conn) => Outcome::Success(DbConn(conn)),
-            Err(_) => Outcome::Failure((Status::ServiceUnavailable, ()))
+            Err(_) => Outcome::Failure((Status::ServiceUnavailable, ())),
         }
     }
 }
@@ -60,19 +60,56 @@ struct GameForm {
 
 #[derive(Serialize)]
 struct Player {
-    id: u64,
+    id: i64,
     name: String,
     score: u32,
 }
 
-#[get("/get_topic/<game_id>/<category>")]
-fn get_topic(conn: DbConn, game_id: u64, category: String) -> Result<Json<String>, &'static str> {
-    for row in &conn.query("select topic from topic where topic like $1 limit 1", &[&category]).unwrap() {
-        let x = row.get(0);
-        return Ok(Json(x))
-    }
+#[derive(Clone, Debug, Serialize)]
+struct Topic {
+    id: i64,
+    topic: String,
+}
 
-    Err("no matches found")
+fn get_used_topic_ids(conn: &DbConn, game_id: i64) -> Vec<i64> {
+    conn.query("select topic from gameround where game=$1", &[&game_id])
+        .unwrap()
+        .iter()
+        .map(|topic| topic.get(0))
+        .collect()
+}
+
+fn get_topics(conn: &DbConn, category: String) -> Vec<Topic> {
+    conn.query(
+        "select id, topic from topic where category=$1",
+        &[&category],
+    ).unwrap()
+        .iter()
+        .map(|topic| {
+            Topic {
+                id: topic.get(0),
+                topic: topic.get(1),
+            }
+        })
+        .collect()
+}
+
+fn get_unused_topic(topics: Vec<Topic>, used_topic_ids: Vec<i64>) -> Result<Topic, &'static str> {
+    let topic = topics
+        .iter()
+        .filter(|topic| !used_topic_ids.contains(&topic.id))
+        .next()
+        .ok_or("no more topics")?;
+    Ok(topic.clone())
+}
+
+#[get("/get_topic/<game_id>/<category>")]
+fn get_topic(conn: DbConn, game_id: i64, category: String) -> Result<Json<Topic>, &'static str> {
+    let used_topics = get_used_topic_ids(&conn, game_id);
+    let topics = get_topics(&conn, category);
+    let topic = get_unused_topic(topics, used_topics)?;
+
+    Ok(Json(topic))
 }
 
 #[post("/get_players", data = "<game>")]
@@ -95,8 +132,12 @@ fn get_players(conn: DbConn, game: Form<GameForm>) -> Result<Json<Vec<Player>>, 
 
 fn main() {
     let config = r2d2::Config::default();
-    let manager = PostgresConnectionManager::new("postgres://coder:coder@localhost/coder",
-                                                 TlsMode::None).unwrap();
+    let manager =
+        PostgresConnectionManager::new("postgres://coder:coder@localhost/coder", TlsMode::None)
+            .unwrap();
     let pool = r2d2::Pool::new(config, manager).unwrap();
-    rocket::ignite().manage(pool).mount("/", routes![get_players, get_topic]).launch();
+    rocket::ignite()
+        .manage(pool)
+        .mount("/", routes![get_players, get_topic])
+        .launch();
 }
